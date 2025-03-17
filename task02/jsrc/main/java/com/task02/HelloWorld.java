@@ -5,6 +5,9 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.model.RetentionSetting;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,25 +18,25 @@ import java.util.Map;
         aliasName = "${lambdas_alias_name}",
         logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
-public class HelloWorld implements RequestHandler<Map<String, Object>, Map<String, Object>> {
+public class HelloWorld implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     @Override
-    public Map<String, Object> handleRequest(Map<String, Object> request, Context context) {
-        String path = (String) request.getOrDefault("rawPath", "");
-        Map<String, Object> requestContext = (Map<String, Object>) request.get("requestContext");
-        String method = requestContext != null ? (String) ((Map<String, Object>) requestContext.get("http")).get("method") : "";
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
+        String httpMethod = request.getHttpMethod();
+        String path = request.getPath();
 
-        if ("/hello".equals(path) && "GET".equalsIgnoreCase(method)) {
-            return createResponse(200, "Hello from Lambda");
+        if ("/hello".equals(path) && "GET".equalsIgnoreCase(httpMethod)) {
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("message", "Hello from Lambda");
+
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(200)
+                    .withBody("{\"statusCode\": 200, \"message\": \"Hello from Lambda\"}");
+        } else {
+            String errorMessage = String.format("Bad request syntax or unsupported method. Request path: %s. HTTP method: %s", path, httpMethod);
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(400)
+                    .withBody("{\"statusCode\": 400, \"message\": \"" + errorMessage + "\"}");
         }
-
-        return createResponse(400, "Bad request syntax or unsupported method. Request path: " + path + ". HTTP method: " + method);
-    }
-
-    private Map<String, Object> createResponse(int statusCode, String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("statusCode", statusCode);
-        response.put("message", message);
-        return response;
     }
 }
