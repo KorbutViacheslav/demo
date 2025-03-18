@@ -2,14 +2,10 @@ package com.task02;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.syndicate.deployment.annotations.lambda.LambdaHandler;
-import com.syndicate.deployment.model.RetentionSetting;
-
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.syndicate.deployment.annotations.lambda.LambdaHandler;
+import com.syndicate.deployment.model.RetentionSetting;
 
 @LambdaHandler(
         lambdaName = "hello_world",
@@ -22,21 +18,25 @@ public class HelloWorld implements RequestHandler<APIGatewayProxyRequestEvent, A
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
+
+        String requestPath = request.getPath();
         String httpMethod = request.getHttpMethod();
-        String path = request.getPath();
 
-        if ("/hello".equals(path) && "GET".equalsIgnoreCase(httpMethod)) {
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("message", "Hello from Lambda");
+        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
 
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(200)
-                    .withBody("{\"statusCode\": 200, \"message\": \"Hello from Lambda\"}");
+        if ("GET".equalsIgnoreCase(httpMethod) && "/hello".equals(requestPath)) {
+            response.setStatusCode(200);
+            response.setBody("{\"statusCode\": 200, \"message\": \"Hello from Lambda\"}");
         } else {
-            String errorMessage = String.format("Bad request syntax or unsupported method. Request path: %s. HTTP method: %s", path, httpMethod);
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(400)
-                    .withBody("{\"statusCode\": 400, \"message\": \"" + errorMessage + "\"}");
+
+            String errorMessage = String.format(
+                    "{\"statusCode\": 400, \"message\": \"Bad request syntax or unsupported method. Request path: %s. HTTP method: %s\"}",
+                    requestPath, httpMethod
+            );
+            response.setStatusCode(400);
+            response.setBody(errorMessage);
         }
+
+        return response;
     }
 }
