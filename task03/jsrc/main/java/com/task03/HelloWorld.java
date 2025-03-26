@@ -26,32 +26,15 @@ import java.util.Map;
 )
 public class HelloWorld implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
-    private static final String HELLO_PATH = "/hello";
-    private static final String GET_METHOD = "GET";
-
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
-        String path = event.getRawPath() != null ? event.getRawPath() : "UNKNOWN";
-        String method = (event.getRequestContext() != null && event.getRequestContext().getHttp() != null)
-                ? event.getRequestContext().getHttp().getMethod()
-                : "UNKNOWN";
 
-        if (HELLO_PATH.equals(path) && GET_METHOD.equalsIgnoreCase(method)) {
-            return createResponse(200, "Hello from Lambda");
-        } else {
-            return createResponse(400, String.format(
-                    "Bad request syntax or unsupported method. Request path: %s. HTTP method: %s", path, method
-            ));
-        }
-    }
-
-    private APIGatewayV2HTTPResponse createResponse(int statusCode, String message) {
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("statusCode", statusCode);
-        responseBody.put("message", message);
+        responseBody.put("statusCode", 200);
+        responseBody.put("message", "Hello from Lambda");
 
         return APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(statusCode)
+                .withStatusCode(200)
                 .withBody(toJson(responseBody))
                 .build();
     }
