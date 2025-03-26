@@ -30,10 +30,10 @@ public class HelloWorld implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
 
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
-        String path = event.getRawPath() != null ? event.getRawPath() : "";
+        String path = event.getRawPath() != null ? event.getRawPath() : "UNKNOWN";
         String method = (event.getRequestContext() != null && event.getRequestContext().getHttp() != null)
                 ? event.getRequestContext().getHttp().getMethod()
-                : "";
+                : "UNKNOWN";
 
         if (HELLO_PATH.equals(path) && GET_METHOD.equalsIgnoreCase(method)) {
             return createResponse(200, "Hello from Lambda");
