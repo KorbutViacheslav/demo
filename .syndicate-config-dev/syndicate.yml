@@ -1,0 +1,17 @@
+account_id: '423623856894'
+deploy_target_bucket: syndicate-education-platform-custom-sandbox-artifacts-1605/a81b9485/task05
+expiration: 2025-03-27 09:21:27.849823+00:00
+extended_prefix_mode: true
+iam_permissions_boundary: undefined
+project_path: D:\JAVA\EPAM Campus\AWS projects\demo
+region: eu-west-1
+resources_prefix: cmtr-a81b9485-
+tags:
+  run_id: JAP-12
+  run_type: stm
+  type: user
+  user_id: a81b9485
+temp_aws_access_key_id: ASIAWFIPTCL7GEEGYK3C
+temp_aws_secret_access_key: JC5vHN396BbmIFkrW1qKRiqcNwmwDO8o7PKEisGc
+temp_aws_session_token: IQoJb3JpZ2luX2VjENn//////////wEaCXVzLWVhc3QtMSJHMEUCIQDgcAoquBzqyeeElhTgCCdTllRoo1f3RK5y9KSHzA35kgIgc5LJXfzIK4PnyPn2hbv2QkBN55ySGsTsbdOy9uJMNbsq2gIIQhAAGgw0MjM2MjM4NTY4OTQiDJFw49CX8V1VRTbzUiq3AmvqWotg5bM80A4OX1v+pxH3qus/ayLk4vfSIfmLcu4DuDCEx4zjIsXc/Hxf0zDJZRTZpdLwSRvxlhsRHO9VUoGylYenE/OHphrP3TaTu6r83gpPfPx3beq9tFbcdQC0mJaYLJXmQNvgFdAfgXWeqbTevN84jmrbW14Txy2OCN2s+6Evt5hoYL1ATMasZpTPqpoaxGTlVtkJC4oTyVxQ7rVQUTP6Ytu2BxKr3E5rqwnCS4KcOor5h5ESbx8ZGtEiC15OFR+Uoh+WT7LpjneB6gbfeKmXCMghiFA0/Jwm5uUc1FlYWRRs1OiUzymkI3YZSUpVA3E3jub1OPF/R/EZS7cFE/XLdjSzSWcyH0Cx3hPkLeUWGyW9fbTCKBx1Hyd6K9PDi1w9vxOz2nMiNOXXhq6cSHXWIkawMNWZlL8GOp0BPwx7EpMaHAmlkE1vQpNpHImvpdzIV6QH9tqZq9qL5YAWe/+umU+rArvgxoK4gp2RF9CX7yih6NUypGzqzq2EUL/33zQSmEBR1su1AmHT7EUNx/WRX1LFjGVnlnMPeLc+1ZqqAlF9mQZmr3Y/PXogX5UGXf96/PiRA7W1fxPH1xDAygwBmeWsf59zbZorOCM+PA/hLvaNmfkf18O/OA==
+use_temp_creds: false

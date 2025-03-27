@@ -1,10 +1,57 @@
 name: demo
 locks:
   modification_lock:
-    last_modification_date: '2025-03-18T07:45:51Z'
+    last_modification_date: '2025-03-27T08:42:57Z'
     is_locked: false
     initiator: Viacheslav
 events:
+- operation: clean
+  initiator: Viacheslav
+  bundle_name: 2
+  time_start: '2025-03-27T10:42:57Z'
+  time_end: '2025-03-27T10:42:57Z'
+  duration_sec: 0.0
+  status: aborted
+- operation: package_meta
+  initiator: Viacheslav
+  bundle_name: demo_250327.104055
+  time_start: '2025-03-27T10:40:57Z'
+  time_end: '2025-03-27T10:40:57Z'
+  duration_sec: 0.022
+  status: failed
+- operation: assemble
+  initiator: Viacheslav
+  bundle_name: demo_250327.104055
+  time_start: '2025-03-27T10:40:57Z'
+  time_end: '2025-03-27T10:40:57Z'
+  duration_sec: 0.002
+  status: succeeded
+- operation: test
+  initiator: Viacheslav
+  time_start: '2025-03-27T10:40:57Z'
+  time_end: '2025-03-27T10:40:57Z'
+  duration_sec: 0.001
+  status: succeeded
+- operation: package_meta
+  initiator: Viacheslav
+  bundle_name: demo_250327.103224
+  time_start: '2025-03-27T10:32:26Z'
+  time_end: '2025-03-27T10:32:26Z'
+  duration_sec: 0.04
+  status: failed
+- operation: assemble
+  initiator: Viacheslav
+  bundle_name: demo_250327.103224
+  time_start: '2025-03-27T10:32:26Z'
+  time_end: '2025-03-27T10:32:26Z'
+  duration_sec: 0.002
+  status: succeeded
+- operation: test
+  initiator: Viacheslav
+  time_start: '2025-03-27T10:32:26Z'
+  time_end: '2025-03-27T10:32:26Z'
+  duration_sec: 0.001
+  status: succeeded
 - operation: clean
   initiator: Viacheslav
   bundle_name: 2
