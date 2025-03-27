@@ -38,36 +38,58 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
     private final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
     private final DynamoDB dynamoDB = new DynamoDB(client);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String tableName = "cmtr-a81b9485-Events-hrwn";
+    private static final String TABLE_NAME = "cmtr-a81b9485-Events-hrwn";
 
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
         try {
             context.getLogger().log("Received event: " + event.getBody());
 
-            Map<String, Object> requestBody = objectMapper.readValue(event.getBody(), Map.class);
-
-            // Validate input
-            if (!requestBody.containsKey("principalId") || !requestBody.containsKey("content")) {
-                return APIGatewayV2HTTPResponse.builder()
-                        .withStatusCode(400)
-                        .withBody("{\"error\": \"Missing required fields\"}")
-                        .build();
+            if (event.getBody() == null || event.getBody().isEmpty()) {
+                return createErrorResponse(400, "Empty request body", context);
             }
 
-            int principalId = (int) requestBody.get("principalId");
-            Map<String, String> content = (Map<String, String>) requestBody.get("content");
+            Map<String, Object> requestBody;
+            try {
+                requestBody = objectMapper.readValue(event.getBody(), Map.class);
+            } catch (Exception e) {
+                return createErrorResponse(400, "Invalid JSON: " + e.getMessage(), context);
+            }
+
+            if (!requestBody.containsKey("principalId") || !requestBody.containsKey("content")) {
+                return createErrorResponse(400, "Missing required fields: principalId or content", context);
+            }
+
+            Integer principalId;
+            try {
+                principalId = Integer.parseInt(requestBody.get("principalId").toString());
+            } catch (NumberFormatException e) {
+                return createErrorResponse(400, "principalId must be an integer", context);
+            }
+
+            Map<String, String> content;
+            try {
+                content = (Map<String, String>) requestBody.get("content");
+            } catch (ClassCastException e) {
+                return createErrorResponse(400, "content must be a map", context);
+            }
 
             String id = UUID.randomUUID().toString();
-            String createdAt = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+            String createdAt = Instant.now().toString();
 
-            Table table = dynamoDB.getTable(tableName);
-            Item item = new Item()
-                    .withPrimaryKey("id", id)
-                    .withNumber("principalId", principalId)
-                    .withString("createdAt", createdAt)
-                    .withMap("body", content);
-            table.putItem(item);
+            Table table = dynamoDB.getTable(TABLE_NAME);
+            try {
+                Item item = new Item()
+                        .withPrimaryKey("id", id)
+                        .withNumber("principalId", principalId)
+                        .withString("createdAt", createdAt)
+                        .withMap("body", content);
+                table.putItem(item);
+                context.getLogger().log("Successfully saved item with id: " + id);
+            } catch (Exception e) {
+                context.getLogger().log("DynamoDB error: " + e.getMessage());
+                return createErrorResponse(500, "Failed to save to DynamoDB: " + e.getMessage(), context);
+            }
 
             Map<String, Object> responseEvent = new HashMap<>();
             responseEvent.put("id", id);
@@ -79,20 +101,34 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
             responseBody.put("statusCode", 201);
             responseBody.put("event", responseEvent);
 
-            String jsonResponse = objectMapper.writeValueAsString(responseBody);
-            context.getLogger().log("Response: " + jsonResponse);
-
             return APIGatewayV2HTTPResponse.builder()
                     .withStatusCode(201)
-                    .withBody(jsonResponse)
+                    .withBody(objectMapper.writeValueAsString(responseBody))
+                    .withHeaders(Map.of("Content-Type", "application/json"))
                     .build();
 
         } catch (Exception e) {
-            context.getLogger().log("Error: " + e.getMessage());
-            e.printStackTrace();
+            context.getLogger().log("Unexpected error: " + e.getMessage());
+            return createErrorResponse(500, "Internal server error: " + e.getMessage(), context);
+        }
+    }
+
+    private APIGatewayV2HTTPResponse createErrorResponse(int statusCode, String message, Context context) {
+        try {
+            Map<String, Object> errorBody = new HashMap<>();
+            errorBody.put("statusCode", statusCode);
+            errorBody.put("error", message);
+
+            return APIGatewayV2HTTPResponse.builder()
+                    .withStatusCode(statusCode)
+                    .withBody(objectMapper.writeValueAsString(errorBody))
+                    .withHeaders(Map.of("Content-Type", "application/json"))
+                    .build();
+        } catch (Exception e) {
+            context.getLogger().log("Error creating error response: " + e.getMessage());
             return APIGatewayV2HTTPResponse.builder()
                     .withStatusCode(500)
-                    .withBody("{\"error\": \"" + e.getMessage() + "\"}")
+                    .withBody("{\"statusCode\": 500, \"error\": \"Internal server error\"}")
                     .build();
         }
     }

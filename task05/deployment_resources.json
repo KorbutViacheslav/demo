@@ -14,12 +14,7 @@
             "dynamodb:DeleteItem",
             "ssm:PutParameter",
             "ssm:GetParameter",
-            "kms:Decrypt",
-            "dynamodb:GetItem",
-            "dynamodb:Query",
-            "dynamodb:PutItem",
-            "dynamodb:Batch*",
-            "dynamodb:DeleteItem"
+            "kms:Decrypt"
           ],
           "Effect": "Allow",
           "Resource": "*"
@@ -30,9 +25,8 @@
     "resource_type": "iam_policy",
     "tags": {}
   },
-  "${target_table}": {
+  "cmtr-a81b9485-Events-hrwn": {
     "resource_type": "dynamodb_table",
-    "table_name": "cmtr-a81b9485-Events-hrwn",
     "hash_key_name": "id",
     "hash_key_type": "S",
     "read_capacity": 1,
@@ -70,16 +64,6 @@
         }
       }
     },
-    "tags": {}
-  },
-  "Events": {
-    "resource_type": "dynamodb_table",
-    "hash_key_name": "id",
-    "hash_key_type": "S",
-    "read_capacity": 1,
-    "write_capacity": 1,
-    "global_indexes": [],
-    "autoscaling": [],
     "tags": {}
   }
 }
