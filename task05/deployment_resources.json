@@ -25,7 +25,7 @@
     "resource_type": "iam_policy",
     "tags": {}
   },
-  "cmtr-a81b9485-Events-hrwn": {
+  "${target_table}": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "id",
     "hash_key_type": "S",
@@ -47,11 +47,18 @@
   "task5_api": {
     "resource_type": "api_gateway",
     "deploy_stage": "api",
-    "dependencies": [],
+    "dependencies": [
+      {
+        "resource_name": "api_handler",
+        "resource_type": "lambda"
+      }
+    ],
     "resources": {
       "/events": {
         "enable_cors": false,
         "POST": {
+          "#_COMMENT": "the 'enable_proxy' option for api method is supported by Syndicate, but not documented anywhere. This option simplifies request parameters transfer to lambda",
+          "enable_proxy": true,
           "authorization_type": "NONE",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
