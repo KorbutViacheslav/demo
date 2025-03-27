@@ -57,7 +57,6 @@
       "/events": {
         "enable_cors": false,
         "POST": {
-          "#_COMMENT": "the 'enable_proxy' option for api method is supported by Syndicate, but not documented anywhere. This option simplifies request parameters transfer to lambda",
           "enable_proxy": true,
           "authorization_type": "NONE",
           "integration_type": "lambda",

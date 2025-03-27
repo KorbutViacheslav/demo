@@ -44,17 +44,14 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
         response.setHeaders(Map.of("Content-Type", "application/json"));
 
         try {
-            // Validate input
             if (event.getBody() == null || event.getBody().isEmpty()) {
                 response.setStatusCode(400);
                 response.setBody("{\"error\":\"Empty request body\"}");
                 return response;
             }
 
-            // Parse input
             Map<String, Object> requestBody = objectMapper.readValue(event.getBody(), Map.class);
 
-            // Validate required fields
             if (!requestBody.containsKey("principalId") || !requestBody.containsKey("content")) {
                 response.setStatusCode(400);
                 response.setBody("{\"error\":\"Missing required fields: principalId or content\"}");
@@ -65,11 +62,9 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
             @SuppressWarnings("unchecked")
             Map<String, String> content = (Map<String, String>) requestBody.get("content");
 
-            // Create event
             String id = UUID.randomUUID().toString();
             String createdAt = Instant.now().toString();
 
-            // Save to DynamoDB
             Table table = dynamoDB.getTable("${target_table}");
             Item item = new Item()
                     .withPrimaryKey("id", id)
@@ -78,7 +73,6 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
                     .withMap("body", content);
             table.putItem(item);
 
-            // Prepare response
             Map<String, Object> eventData = new HashMap<>();
             eventData.put("id", id);
             eventData.put("principalId", principalId);
