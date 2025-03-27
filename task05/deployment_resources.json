@@ -32,6 +32,7 @@
   },
   "${target_table}": {
     "resource_type": "dynamodb_table",
+    "table_name": "cmtr-a81b9485-Events-hrwn",
     "hash_key_name": "id",
     "hash_key_type": "S",
     "read_capacity": 1,
