@@ -49,20 +49,15 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, APIGatewa
         logger.log("Received event: " + event);
 
         try {
-            // Parse request body
             Map<String, Object> body = parseRequestBody(event, logger);
 
-            // Extract and validate principalId and content
             int principalId = extractPrincipalId(body);
             Map<String, String> content = extractContent(body);
 
-            // Create event item
             Map<String, AttributeValue> item = createEventItem(principalId, content);
 
-            // Save to DynamoDB
             saveToDatabase(item, logger);
 
-            // Prepare and return response
             return createSuccessResponse(item);
 
         } catch (Exception e) {
