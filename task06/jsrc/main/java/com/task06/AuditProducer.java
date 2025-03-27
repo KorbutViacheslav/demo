@@ -15,6 +15,9 @@ import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.model.RetentionSetting;
 
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @LambdaHandler(
@@ -27,7 +30,8 @@ import java.util.UUID;
 @DynamoDbTriggerEventSource(targetTable = "Configuration", batchSize = 1)
 @EnvironmentVariables(value = {
         @EnvironmentVariable(key = "region", value = "${region}"),
-        @EnvironmentVariable(key = "table", value = "${target_table}")})
+        @EnvironmentVariable(key = "table", value = "${target_table}")
+})
 public class AuditProducer implements RequestHandler<DynamodbEvent, Void> {
 
     private final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.defaultClient();
@@ -37,15 +41,17 @@ public class AuditProducer implements RequestHandler<DynamodbEvent, Void> {
     @Override
     public Void handleRequest(DynamodbEvent event, Context context) {
         for (DynamodbEvent.DynamodbStreamRecord record : event.getRecords()) {
-            processRecord(record);
+            processRecord(record, context);
         }
         return null;
     }
 
-    private void processRecord(DynamodbEvent.DynamodbStreamRecord record) {
+    private void processRecord(DynamodbEvent.DynamodbStreamRecord record, Context context) {
         String eventName = record.getEventName();
         String itemKey = record.getDynamodb().getKeys().get("key").getS();
-        String modificationTime = Instant.now().toString();
+        String modificationTime = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+
+        context.getLogger().log("Processing record: " + record.toString());
 
         Item auditItem = new Item()
                 .withPrimaryKey("id", UUID.randomUUID().toString())
@@ -53,7 +59,10 @@ public class AuditProducer implements RequestHandler<DynamodbEvent, Void> {
                 .withString("modificationTime", modificationTime);
 
         if ("INSERT".equals(eventName)) {
-            auditItem.withMap("newValue", record.getDynamodb().getNewImage());
+            Map<String, Object> newValue = new HashMap<>();
+            newValue.put("key", itemKey);
+            newValue.put("value", Integer.parseInt(record.getDynamodb().getNewImage().get("value").getN()));
+            auditItem.withMap("newValue", newValue);
         } else if ("MODIFY".equals(eventName)) {
             int oldValue = Integer.parseInt(record.getDynamodb().getOldImage().get("value").getN());
             int newValue = Integer.parseInt(record.getDynamodb().getNewImage().get("value").getN());
@@ -62,6 +71,7 @@ public class AuditProducer implements RequestHandler<DynamodbEvent, Void> {
                     .withString("updatedAttribute", "value");
         }
 
+        context.getLogger().log("Saving audit item: " + auditItem.toJSON());
         auditTable.putItem(auditItem);
     }
 }
