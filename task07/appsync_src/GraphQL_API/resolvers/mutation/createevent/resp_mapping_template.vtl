@@ -1,12 +1,4 @@
 {
-   "id": "$context.result.id.S",
-   "createdAt": "$context.result.createdAt.S"
+   "id": "$ctx.result.id",
+   "createdAt": "$ctx.result.createdAt"
 }
-#if($context.result.id)
-{
-   "id": "$context.result.id",
-   "createdAt": "$context.result.createdAt"
-}
-#else
-$utils.error("Failed to create event")
-#end

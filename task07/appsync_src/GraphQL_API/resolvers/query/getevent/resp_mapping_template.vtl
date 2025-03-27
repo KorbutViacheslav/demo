@@ -1,6 +1,6 @@
 {
-  "id": "$context.result.id.S",
-  "userId": $context.result.userId.N,
-  "createdAt": "$context.result.createdAt.S",
-  "payLoad": $util.toJson($util.parseJson($context.result.payLoad.S))
+  "id": "$ctx.result.id",
+  "userId": $ctx.result.userId,
+  "createdAt": "$ctx.result.createdAt",
+  "payLoad": $util.toJson($ctx.result.payLoad)
 }
