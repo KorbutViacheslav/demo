@@ -1,4 +1,4 @@
-package ua.demo.weathersdk;
+package ua.client;
 
 import java.io.IOException;
 import java.net.URI;

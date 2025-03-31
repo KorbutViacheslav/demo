@@ -13,7 +13,13 @@
         <option value="$PROJECT_DIR$/task08/pom.xml" />
         <option value="$PROJECT_DIR$/task09/pom.xml" />
         <option value="$PROJECT_DIR$/weather-sdk/pom.xml" />
+        <option value="$PROJECT_DIR$/weather-client/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/weather-sdk/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_23" default="true" project-jdk-name="openjdk-23" project-jdk-type="JavaSDK">

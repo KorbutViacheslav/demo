@@ -14,9 +14,11 @@
         <module name="task04" />
         <module name="task01" />
         <module name="task02" />
-        <module name="weather-sdk" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="weather-sdk" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

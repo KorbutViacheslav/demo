@@ -12,8 +12,7 @@ import com.syndicate.deployment.model.DeploymentRuntime;
 import com.syndicate.deployment.model.RetentionSetting;
 import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
-
-import ua.demo.weathersdk.OpenMeteo;
+import ua.client.OpenMeteo;
 
 import java.io.IOException;
 
@@ -30,7 +29,10 @@ import java.io.IOException;
         runtime = DeploymentRuntime.JAVA11,
         artifactExtension = ArtifactExtension.ZIP
 )
-@LambdaUrlConfig(authType = AuthType.NONE, invokeMode = InvokeMode.BUFFERED)
+@LambdaUrlConfig(
+        authType = AuthType.NONE,
+        invokeMode = InvokeMode.BUFFERED
+)
 public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
     private static final String WEATHER_PATH = "/weather";
     private static final String GET_METHOD = "GET";
