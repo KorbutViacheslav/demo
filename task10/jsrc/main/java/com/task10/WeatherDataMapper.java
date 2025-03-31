@@ -49,31 +49,16 @@ public class WeatherDataMapper {
 
     private Map<String, AttributeValue> buildHourly(JsonNode hourlyData) {
         Map<String, AttributeValue> hourly = new HashMap<>();
-
-        JsonNode temperatureNode = hourlyData.get("temperature_2m");
-        if (temperatureNode != null) {
-            double[] temperatures = objectMapper.convertValue(temperatureNode, double[].class);
-            if (temperatures != null) {
-                hourly.put("temperature_2m", new AttributeValue().withL(
-                        Arrays.stream(temperatures)
-                                .mapToObj(d -> new AttributeValue().withN(String.valueOf(d)))
-                                .collect(Collectors.toList())
-                ));
-            }
-        }
-
-        JsonNode timeNode = hourlyData.get("time");
-        if (timeNode != null) {
-            String[] times = objectMapper.convertValue(timeNode, String[].class);
-            if (times != null) {
-                hourly.put("time", new AttributeValue().withL(
-                        Arrays.stream(times)
-                                .map(AttributeValue::new)
-                                .collect(Collectors.toList())
-                ));
-            }
-        }
-
+        hourly.put("temperature_2m", new AttributeValue().withL(
+                Arrays.stream(objectMapper.convertValue(hourlyData.get("temperature_2m"), double[].class))
+                        .mapToObj(d -> new AttributeValue().withN(String.valueOf(d)))
+                        .collect(Collectors.toList())
+        ));
+        hourly.put("time", new AttributeValue().withL(
+                Arrays.stream(objectMapper.convertValue(hourlyData.get("time"), String[].class))
+                        .map(AttributeValue::new)
+                        .collect(Collectors.toList())
+        ));
         return hourly;
     }
 
