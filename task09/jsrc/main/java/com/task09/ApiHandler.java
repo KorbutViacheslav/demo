@@ -61,7 +61,10 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
     }
 
     private APIGatewayV2HTTPResponse buildBadRequestResponse(String path, String method) {
-        String body = String.format("{\"statusCode\": 400, \"message\": \"Bad request. Path: %s, Method: %s\"}", path, method);
+        String body = String.format(
+                "{\"statusCode\": 400, \"message\": \"Bad request syntax or unsupported method. Request path: %s. HTTP method: %s\"}",
+                path, method
+        );
         return buildResponse(400, body);
     }
 
