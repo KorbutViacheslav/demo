@@ -13,6 +13,8 @@ import com.syndicate.deployment.model.RetentionSetting;
 import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
 
+import ua.demo.weathersdk.OpenMeteo;
+
 import java.io.IOException;
 
 @LambdaHandler(
@@ -35,16 +37,7 @@ public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
     private static final double DEFAULT_LATITUDE = 50.4375;
     private static final double DEFAULT_LONGITUDE = 30.5;
 
-    private final OpenMeteo weatherClient;
-
-    public ApiHandler() {
-        this.weatherClient = new OpenMeteo();
-    }
-
-    // Конструктор для тестування з можливістю введення мок-клієнта
-    public ApiHandler(OpenMeteo weatherClient) {
-        this.weatherClient = weatherClient;
-    }
+    private final OpenMeteo weatherClient = new OpenMeteo();
 
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
