@@ -33,8 +33,8 @@ import java.util.Map;
 @EnvironmentVariables(value = {@EnvironmentVariable(key = "table", value = "${target_table}")})
 public class Processor implements RequestHandler<Object, Map<String, Object>> {
 
-    private static final double DEFAULT_LATITUDE = 52.52;
-    private static final double DEFAULT_LONGITUDE = 13.41;
+    private static final double DEFAULT_LATITUDE = 50.4375;
+    private static final double DEFAULT_LONGITUDE = 30.5;
 
     private final AmazonDynamoDB dynamoDB = AmazonDynamoDBClientBuilder.standard().build();
     private final OpenMeteo weatherClient = new OpenMeteo();
