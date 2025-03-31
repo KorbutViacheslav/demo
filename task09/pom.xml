@@ -42,7 +42,7 @@
             <artifactId>weather-sdk</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/weather-sdk-1.0.0.jar</systemPath>
+            <systemPath>${basedir}/lib/weather-sdk-1.0.0.jar</systemPath>
         </dependency>
     </dependencies>
 
