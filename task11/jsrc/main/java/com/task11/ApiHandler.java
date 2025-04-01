@@ -382,18 +382,53 @@ class TableService {
     }
 
     public Map<String, Object> createTable(Map<String, Object> tableData) {
-        Integer id = (Integer) tableData.get("id");
+        // Перевірка наявності обов'язкових полів
+        if (!tableData.containsKey("id") || tableData.get("id") == null) {
+            return ResponseUtil.createResponse(400, "Помилка: поле 'id' є обов'язковим і не може бути null");
+        }
+        if (!tableData.containsKey("number") || tableData.get("number") == null) {
+            return ResponseUtil.createResponse(400, "Помилка: поле 'number' є обов'язковим і не може бути null");
+        }
+        if (!tableData.containsKey("places") || tableData.get("places") == null) {
+            return ResponseUtil.createResponse(400, "Помилка: поле 'places' є обов'язковим і не може бути null");
+        }
+        if (!tableData.containsKey("isVip") || tableData.get("isVip") == null) {
+            return ResponseUtil.createResponse(400, "Помилка: поле 'isVip' є обов'язковим і не може бути null");
+        }
+
+        Integer id;
+        Integer number;
+        Integer places;
+        Boolean isVip;
+        try {
+            id = (Integer) tableData.get("id");
+            number = (Integer) tableData.get("number");
+            places = (Integer) tableData.get("places");
+            isVip = (Boolean) tableData.get("isVip");
+        } catch (ClassCastException e) {
+            return ResponseUtil.createResponse(400, "Помилка: некоректний тип даних у вхідних полях (id, number, places, isVip)");
+        }
+
+        // Перевірка на поле 'name', яке не використовується
+        if (tableData.containsKey("name")) {
+            return ResponseUtil.createResponse(400, "Помилка: поле 'name' не підтримується. Використовуйте 'number' для номера столу");
+        }
+
         String idString = String.valueOf(id);
         Table table = dynamoDB.getTable(tablesTableName);
 
         Item item = new Item()
                 .withPrimaryKey("id", idString)
-                .withInt("number", (Integer) tableData.get("number"))
-                .withInt("places", (Integer) tableData.get("places"))
-                .withBoolean("isVip", (Boolean) tableData.get("isVip"));
+                .withInt("number", number)
+                .withInt("places", places)
+                .withBoolean("isVip", isVip);
 
         if (tableData.containsKey("minOrder")) {
-            item.withInt("minOrder", (Integer) tableData.get("minOrder"));
+            try {
+                item.withInt("minOrder", (Integer) tableData.get("minOrder"));
+            } catch (ClassCastException e) {
+                return ResponseUtil.createResponse(400, "Помилка: поле 'minOrder' має бути цілим числом");
+            }
         }
 
         table.putItem(item);
