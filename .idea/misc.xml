@@ -16,11 +16,11 @@
         <option value="$PROJECT_DIR$/weather-client/pom.xml" />
         <option value="$PROJECT_DIR$/task10/pom.xml" />
         <option value="$PROJECT_DIR$/task11/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
       <set>
-        <option value="$PROJECT_DIR$/task11/pom.xml" />
         <option value="$PROJECT_DIR$/weather-sdk/pom.xml" />
       </set>
     </option>

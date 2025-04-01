@@ -22,13 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
-import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
-import com.syndicate.deployment.annotations.resources.Dependencies;
 import com.syndicate.deployment.annotations.resources.DependsOn;
 import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
-import com.syndicate.deployment.model.lambda.url.AuthType;
-import com.syndicate.deployment.model.lambda.url.InvokeMode;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,22 +44,16 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
         aliasName = "${lambdas_alias_name}",
         logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
-@Dependencies(value = {
-        @DependsOn(resourceType = ResourceType.COGNITO_USER_POOL, name = "${booking_userpool}"),
-        @DependsOn(resourceType = ResourceType.DYNAMODB_TABLE, name = "${tables_table}"),
-        @DependsOn(resourceType = ResourceType.DYNAMODB_TABLE, name = "${reservations_table}")
-})
+@DependsOn(resourceType = ResourceType.COGNITO_USER_POOL, name = "${booking_userpool}")
+@DependsOn(resourceType = ResourceType.DYNAMODB_TABLE, name = "${tables_table}")
+@DependsOn(resourceType = ResourceType.DYNAMODB_TABLE, name = "${reservations_table}")
 @EnvironmentVariables(value = {
         @EnvironmentVariable(key = "REGION", value = "${region}"),
-        @EnvironmentVariable(key = "COGNITO_ID", value = "${pool_name}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
-        @EnvironmentVariable(key = "CLIENT_ID", value = "${pool_name}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID),
-        @EnvironmentVariable(key = "tablesTable", value = "${tables_table}"),
-        @EnvironmentVariable(key = "reservationsTable", value = "${reservations_table}")
+        @EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
+        @EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID),
+        @EnvironmentVariable(key = "TABLES_TABLE", value = "${tables_table}"),
+        @EnvironmentVariable(key = "RESERVATIONS_TABLE", value = "${reservations_table}")
 })
-@LambdaUrlConfig(
-        authType = AuthType.NONE,
-        invokeMode = InvokeMode.BUFFERED
-)
 public class ApiHandler implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -74,17 +64,24 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 
     @Override
     public Map<String, Object> handleRequest(Map<String, Object> request, Context context) {
-        // Initialize AWS services
+        // Логування змінних середовища для перевірки
+        context.getLogger().log("REGION: " + System.getenv("REGION"));
+        context.getLogger().log("COGNITO_ID: " + System.getenv("COGNITO_ID"));
+        context.getLogger().log("CLIENT_ID: " + System.getenv("CLIENT_ID"));
+        context.getLogger().log("tablesTable: " + System.getenv("tablesTable"));
+        context.getLogger().log("reservationsTable: " + System.getenv("reservationsTable"));
+
+        // Ініціалізація сервісів
         initializeServices();
 
-        // Initialize route handlers
+        // Ініціалізація обробників
         initializeHandlers(context);
 
         try {
             String resource = (String) request.get("resource");
             String httpMethod = (String) request.get("httpMethod");
 
-            // Create request context with parsed information
+            // Створення контексту запиту
             ApiRequestContext requestContext = new ApiRequestContext(
                     request,
                     parseBody((String) request.get("body")),
@@ -93,7 +90,7 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
                     context
             );
 
-            // Find and execute the appropriate handler
+            // Пошук і виконання відповідного обробника
             String handlerKey = resource + ":" + httpMethod;
             RouteHandler handler = handlers.get(handlerKey);
 
@@ -101,21 +98,21 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
                 return handler.handle(requestContext);
             }
 
-            return ResponseUtil.createResponse(400, "Invalid request");
+            return ResponseUtil.createResponse(400, "Невірний запит");
         } catch (Exception e) {
-            return ResponseUtil.createResponse(400, "Error: " + e.getMessage());
+            return ResponseUtil.createResponse(400, "Помилка: " + e.getMessage());
         }
     }
 
     private void initializeServices() {
         String region = System.getenv("REGION");
 
-        // Initialize Cognito client
+        // Ініціалізація клієнта Cognito
         cognitoClient = AWSCognitoIdentityProviderClientBuilder.standard()
                 .withRegion(region)
                 .build();
 
-        // Initialize DynamoDB client
+        // Ініціалізація клієнта DynamoDB
         AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(region)
                 .build();
@@ -125,21 +122,21 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
     private void initializeHandlers(Context context) {
         String cognitoId = System.getenv("COGNITO_ID");
         String clientId = System.getenv("CLIENT_ID");
-        String tablesTableName = System.getenv("TABLES_TABLE");
-        String reservationsTableName = System.getenv("RESERVATIONS_TABLE");
+        String tablesTableName = System.getenv("tablesTable");
+        String reservationsTableName = System.getenv("reservationsTable");
 
-        // Auth handlers
+        // Обробники авторизації
         AuthService authService = new AuthService(cognitoClient, cognitoId, clientId);
         handlers.put("/signup:POST", new SignupHandler(authService));
         handlers.put("/signin:POST", new SigninHandler(authService));
 
-        // Table handlers
+        // Обробники столів
         TableService tableService = new TableService(dynamoDB, tablesTableName);
         handlers.put("/tables:GET", new GetTablesHandler(tableService));
         handlers.put("/tables:POST", new CreateTableHandler(tableService));
         handlers.put("/tables/{tableId}:GET", new GetTableByIdHandler(tableService));
 
-        // Reservation handlers
+        // Обробники бронювань
         ReservationService reservationService = new ReservationService(dynamoDB, reservationsTableName, tablesTableName);
         handlers.put("/reservations:GET", new GetReservationsHandler(reservationService));
         handlers.put("/reservations:POST", new CreateReservationHandler(reservationService));
@@ -149,7 +146,6 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
         return body != null ? objectMapper.readValue(body, Map.class) : null;
     }
 }
-
 // Request context to pass around handler chain
 class ApiRequestContext {
     private final Map<String, Object> request;
@@ -226,23 +222,25 @@ class AuthService {
     }
 
     public Map<String, Object> signup(String email, String password, String firstName, String lastName, Context context) {
-        context.getLogger().log("Signup attempt for email: " + email + ", firstName: " + firstName + ", lastName: " + lastName);
+        context.getLogger().log("Спроба реєстрації для email: " + email + ", firstName: " + firstName + ", lastName: " + lastName);
+        context.getLogger().log("Використовується cognitoId: " + cognitoId);
 
-        // Validate input
+        // Валідація вхідних даних
         if (!ValidationUtil.isValidEmail(email)) {
-            context.getLogger().log("Invalid email format: " + email);
-            return ResponseUtil.createResponse(400, "Invalid email format");
+            context.getLogger().log("Невірний формат email: " + email);
+            return ResponseUtil.createResponse(400, "Невірний формат email");
         }
         if (!ValidationUtil.isValidPassword(password)) {
-            context.getLogger().log("Invalid password format for email: " + email);
-            return ResponseUtil.createResponse(400, "Invalid password format");
+            context.getLogger().log("Невірний формат пароля для email: " + email + ". Пароль має бути щонайменше 12 символів, із великими та малими літерами, цифрою та спеціальним символом.");
+            return ResponseUtil.createResponse(400, "Невірний формат пароля");
         }
         if (firstName == null || lastName == null || firstName.trim().isEmpty() || lastName.trim().isEmpty()) {
-            context.getLogger().log("Missing or empty firstName or lastName: firstName=" + firstName + ", lastName=" + lastName);
-            return ResponseUtil.createResponse(400, "Missing or empty firstName or lastName");
+            context.getLogger().log("Відсутнє або порожнє firstName чи lastName: firstName=" + firstName + ", lastName=" + lastName);
+            return ResponseUtil.createResponse(400, "Відсутнє або порожнє firstName чи lastName");
         }
 
         try {
+            context.getLogger().log("Створення користувача в Cognito для email: " + email);
             AdminCreateUserRequest createUserRequest = new AdminCreateUserRequest()
                     .withUserPoolId(cognitoId)
                     .withUsername(email)
@@ -256,8 +254,9 @@ class AuthService {
                     .withMessageAction("SUPPRESS");
 
             cognitoClient.adminCreateUser(createUserRequest);
-            context.getLogger().log("User created successfully for email: " + email);
+            context.getLogger().log("Користувач успішно створений для email: " + email);
 
+            context.getLogger().log("Встановлення постійного пароля для email: " + email);
             AdminSetUserPasswordRequest setPasswordRequest = new AdminSetUserPasswordRequest()
                     .withUserPoolId(cognitoId)
                     .withUsername(email)
@@ -265,11 +264,11 @@ class AuthService {
                     .withPermanent(true);
 
             cognitoClient.adminSetUserPassword(setPasswordRequest);
-            context.getLogger().log("Password set successfully for email: " + email);
+            context.getLogger().log("Пароль успішно встановлено для email: " + email);
 
-            return ResponseUtil.createResponse(200, "Sign-up successful");
+            return ResponseUtil.createResponse(200, "Реєстрація успішна");
         } catch (UsernameExistsException e) {
-            context.getLogger().log("User already exists, attempting to update password for email: " + email);
+            context.getLogger().log("Користувач уже існує, спроба оновити пароль для email: " + email);
             try {
                 AdminSetUserPasswordRequest setPasswordRequest = new AdminSetUserPasswordRequest()
                         .withUserPoolId(cognitoId)
@@ -277,21 +276,21 @@ class AuthService {
                         .withPassword(password)
                         .withPermanent(true);
                 cognitoClient.adminSetUserPassword(setPasswordRequest);
-                context.getLogger().log("Password updated successfully for existing user: " + email);
-                return ResponseUtil.createResponse(200, "Sign-up successful (user already existed, password updated)");
+                context.getLogger().log("Пароль успішно оновлено для існуючого користувача: " + email);
+                return ResponseUtil.createResponse(200, "Реєстрація успішна (користувач уже існував, пароль оновлено)");
             } catch (Exception ex) {
-                context.getLogger().log("Failed to update password for existing user: " + ex.getMessage());
-                return ResponseUtil.createResponse(400, "Failed to update password: " + ex.getMessage());
+                context.getLogger().log("Не вдалося оновити пароль для існуючого користувача: " + ex.getMessage());
+                return ResponseUtil.createResponse(400, "Не вдалося оновити пароль: " + ex.getMessage());
             }
         } catch (Exception e) {
-            context.getLogger().log("Signup failed for email " + email + ": " + e.getMessage());
-            return ResponseUtil.createResponse(400, "Signup failed: " + e.getMessage());
+            context.getLogger().log("Реєстрація не вдалася для email " + email + ": " + e.getMessage());
+            return ResponseUtil.createResponse(400, "Реєстрація не вдалася: " + e.getMessage());
         }
     }
 
     public Map<String, Object> signin(String email, String password) {
         if (!ValidationUtil.isValidEmail(email) || !ValidationUtil.isValidPassword(password)) {
-            return ResponseUtil.createResponse(400, "Invalid credentials");
+            return ResponseUtil.createResponse(400, "Невірні облікові дані");
         }
 
         AdminInitiateAuthRequest authRequest = new AdminInitiateAuthRequest()

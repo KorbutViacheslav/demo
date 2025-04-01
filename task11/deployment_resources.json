@@ -22,7 +22,8 @@
             "cognito-idp:ListUserPools",
             "cognito-idp:ListUserPoolClients",
             "cognito-idp:AdminRespondToAuthChallenge",
-            "cognito-idp:AdminConfirmSignUp"
+            "cognito-idp:AdminConfirmSignUp",
+            "cognito-idp:AdminSetUserPassword"
           ],
           "Effect": "Allow",
           "Resource": "*"
@@ -30,7 +31,8 @@
       ],
       "Version": "2012-10-17"
     },
-    "resource_type": "iam_policy"
+    "resource_type": "iam_policy",
+    "tags": {}
   },
   "api_handler-role": {
     "predefined_policies": [],
@@ -41,7 +43,7 @@
     "resource_type": "iam_role",
     "tags": {}
   },
-  "${booking_userpool}": {
+  "simple-booking-userpool": {
     "resource_type": "cognito_idp",
     "password_policy": {
       "minimum_length": 8,
@@ -128,8 +130,7 @@
           "default_error_pattern": true
         }
       },
-      "/tables{tableId}": {
-        "enable_cors": true,
+      "/tables/{tableId}": {
         "GET": {
           "enable_proxy": true,
           "authorization_type": "authorizer",
@@ -144,7 +145,6 @@
         }
       },
       "/reservations": {
-        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "authorizer",
