@@ -11,12 +11,15 @@
         <module name="task05" />
         <module name="task06" />
         <module name="task03" />
+        <module name="weather-client" />
         <module name="task04" />
         <module name="task01" />
         <module name="task02" />
+        <module name="task10" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="task11" target="11" />
       <module name="weather-sdk" target="17" />
     </bytecodeTargetLevel>
   </component>
