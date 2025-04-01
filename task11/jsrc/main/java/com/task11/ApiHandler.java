@@ -122,8 +122,8 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
     private void initializeHandlers(Context context) {
         String cognitoId = System.getenv("COGNITO_ID");
         String clientId = System.getenv("CLIENT_ID");
-        String tablesTableName = System.getenv("tablesTable");
-        String reservationsTableName = System.getenv("reservationsTable");
+        String tablesTableName = System.getenv("TABLES_TABLE");
+        String reservationsTableName = System.getenv("RESERVATIONS_TABLE");
 
         // Обробники авторизації
         AuthService authService = new AuthService(cognitoClient, cognitoId, clientId);
@@ -146,6 +146,7 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
         return body != null ? objectMapper.readValue(body, Map.class) : null;
     }
 }
+
 // Request context to pass around handler chain
 class ApiRequestContext {
     private final Map<String, Object> request;
@@ -382,60 +383,47 @@ class TableService {
     }
 
     public Map<String, Object> createTable(Map<String, Object> tableData) {
-        // Перевірка наявності обов'язкових полів
+        // Перевірка обов'язкових полів
         if (!tableData.containsKey("id") || tableData.get("id") == null) {
-            return ResponseUtil.createResponse(400, "Помилка: поле 'id' є обов'язковим і не може бути null");
+            return ResponseUtil.createResponse(400, "Поле 'id' є обов'язковим");
         }
         if (!tableData.containsKey("number") || tableData.get("number") == null) {
-            return ResponseUtil.createResponse(400, "Помилка: поле 'number' є обов'язковим і не може бути null");
+            return ResponseUtil.createResponse(400, "Поле 'number' є обов'язковим");
         }
         if (!tableData.containsKey("places") || tableData.get("places") == null) {
-            return ResponseUtil.createResponse(400, "Помилка: поле 'places' є обов'язковим і не може бути null");
+            return ResponseUtil.createResponse(400, "Поле 'places' є обов'язковим");
         }
         if (!tableData.containsKey("isVip") || tableData.get("isVip") == null) {
-            return ResponseUtil.createResponse(400, "Помилка: поле 'isVip' є обов'язковим і не може бути null");
+            return ResponseUtil.createResponse(400, "Поле 'isVip' є обов'язковим");
         }
 
-        Integer id;
-        Integer number;
-        Integer places;
-        Boolean isVip;
         try {
-            id = (Integer) tableData.get("id");
-            number = (Integer) tableData.get("number");
-            places = (Integer) tableData.get("places");
-            isVip = (Boolean) tableData.get("isVip");
-        } catch (ClassCastException e) {
-            return ResponseUtil.createResponse(400, "Помилка: некоректний тип даних у вхідних полях (id, number, places, isVip)");
-        }
+            Integer id = (Integer) tableData.get("id");
+            Integer number = (Integer) tableData.get("number");
+            Integer places = (Integer) tableData.get("places");
+            Boolean isVip = (Boolean) tableData.get("isVip");
 
-        // Перевірка на поле 'name', яке не використовується
-        if (tableData.containsKey("name")) {
-            return ResponseUtil.createResponse(400, "Помилка: поле 'name' не підтримується. Використовуйте 'number' для номера столу");
-        }
+            Table table = dynamoDB.getTable(tablesTableName);
+            Item item = new Item()
+                    .withPrimaryKey("id", String.valueOf(id))
+                    .withInt("number", number)
+                    .withInt("places", places)
+                    .withBoolean("isVip", isVip);
 
-        String idString = String.valueOf(id);
-        Table table = dynamoDB.getTable(tablesTableName);
-
-        Item item = new Item()
-                .withPrimaryKey("id", idString)
-                .withInt("number", number)
-                .withInt("places", places)
-                .withBoolean("isVip", isVip);
-
-        if (tableData.containsKey("minOrder")) {
-            try {
+            if (tableData.containsKey("minOrder")) {
                 item.withInt("minOrder", (Integer) tableData.get("minOrder"));
-            } catch (ClassCastException e) {
-                return ResponseUtil.createResponse(400, "Помилка: поле 'minOrder' має бути цілим числом");
             }
+
+            table.putItem(item);
+
+            // Повертаємо JSON об'єкт з id
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("id", id);
+            return ResponseUtil.createResponse(200, responseBody);
+
+        } catch (Exception e) {
+            return ResponseUtil.createResponse(400, "Помилка при створенні столу: " + e.getMessage());
         }
-
-        table.putItem(item);
-
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("id", id);
-        return ResponseUtil.createResponse(200, responseBody);
     }
 
     public Map<String, Object> getTableById(String tableId, Context context) {
@@ -483,7 +471,9 @@ class CreateTableHandler implements RouteHandler {
 
     @Override
     public Map<String, Object> handle(ApiRequestContext context) {
-        return tableService.createTable(context.getBody());
+        Map<String, Object> body = context.getBody();
+        context.getLambdaContext().getLogger().log("Отримано запит на створення столу: " + body);
+        return tableService.createTable(body);
     }
 }
 
