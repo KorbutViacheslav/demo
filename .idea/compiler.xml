@@ -6,18 +6,19 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="weather-client" />
+        <module name="demo" />
         <module name="task09" />
         <module name="task08" />
         <module name="task05" />
         <module name="task06" />
         <module name="task03" />
-        <module name="weather-client" />
         <module name="task04" />
         <module name="task01" />
+        <module name="task12" />
         <module name="task02" />
         <module name="task10" />
         <module name="task11" />
-        <module name="demo" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
