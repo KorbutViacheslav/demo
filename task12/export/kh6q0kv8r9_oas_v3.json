@@ -17,9 +17,11 @@
   "paths": {
     "/reservations": {
       "get": {
+        "summary": "Retrieve all reservations",
+        "description": "This endpoint retrieves a list of all reservations currently stored in the system. Each reservation includes information about the table number, client name, contact information, date, and time slot.",
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "A list of reservations retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -47,9 +49,45 @@
         }
       },
       "post": {
+        "summary": "Create a new reservation",
+        "description": "This endpoint allows a user to create a new reservation by providing details such as table ID, client name, contact information, date, and time slot.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableId": {
+                    "type": "string",
+                    "description": "The ID of the table to reserve"
+                  },
+                  "clientName": {
+                    "type": "string",
+                    "description": "The name of the client making the reservation"
+                  },
+                  "contactInfo": {
+                    "type": "string",
+                    "description": "Contact information of the client (e.g., phone or email)"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "The date of the reservation"
+                  },
+                  "timeSlot": {
+                    "type": "string",
+                    "description": "The time slot for the reservation (e.g., '18:00-20:00')"
+                  }
+                },
+                "required": ["tableId", "clientName", "date", "timeSlot"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "Reservation created successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -79,9 +117,11 @@
     },
     "/tables": {
       "get": {
+        "summary": "Retrieve all tables",
+        "description": "This endpoint retrieves a list of all tables available in the system, including their IDs and other relevant details.",
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "A list of tables retrieved successfully",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -119,9 +159,32 @@
         }
       },
       "post": {
+        "summary": "Create a new table",
+        "description": "This endpoint allows the creation of a new table by specifying its details, such as table ID and capacity.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableId": {
+                    "type": "string",
+                    "description": "The unique identifier for the table"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "description": "The maximum number of people the table can accommodate"
+                  }
+                },
+                "required": ["tableId", "capacity"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "Table created successfully",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -159,9 +222,11 @@
         }
       },
       "options": {
+        "summary": "CORS preflight for /tables",
+        "description": "Handles CORS preflight requests for the /tables endpoint.",
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "CORS preflight response",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -209,9 +274,32 @@
     },
     "/signin": {
       "post": {
+        "summary": "Sign in a user",
+        "description": "This endpoint authenticates a user by accepting their username and password, returning an authentication token upon success.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "The username of the user"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password of the user"
+                  }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "User signed in successfully",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -244,9 +332,11 @@
         }
       },
       "options": {
+        "summary": "CORS preflight for /signin",
+        "description": "Handles CORS preflight requests for the /signin endpoint.",
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "CORS preflight response",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -294,9 +384,32 @@
     },
     "/signup": {
       "post": {
+        "summary": "Register a new user",
+        "description": "This endpoint registers a new user by accepting a username and password, creating a new account in the system.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "The desired username for the new user"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password for the new user"
+                  }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "User registered successfully",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -329,9 +442,11 @@
         }
       },
       "options": {
+        "summary": "CORS preflight for /signup",
+        "description": "Handles CORS preflight requests for the /signup endpoint.",
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "CORS preflight response",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -379,6 +494,8 @@
     },
     "/tables/{tableId}": {
       "get": {
+        "summary": "Retrieve a specific table",
+        "description": "This endpoint retrieves details of a specific table identified by its tableId.",
         "parameters": [
           {
             "name": "tableId",
@@ -386,12 +503,13 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "The unique identifier of the table"
           }
         ],
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "Table details retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
